@@ -18,9 +18,12 @@ public class ChatManager : MonoBehaviour, IChatClientListener
     [SerializeField] GameObject chatBubble; //A reference to the chatBubble prefab
     [SerializeField] GameObject chatWindowPrefab; //A reference to the chatWindow prefab
 
+    
+
     void Start()
     {
         chatClient = new ChatClient(this);
+        
     }
 
     void Update()
@@ -35,19 +38,19 @@ public class ChatManager : MonoBehaviour, IChatClientListener
         print("Connecting now!");
         chatClient.AuthValues = new Photon.Chat.AuthenticationValues(user);
         ChatAppSettings settings = PhotonNetwork.PhotonServerSettings.AppSettings.GetChatSettings();
-
         
-        //bool channelExists = chatClient.CanChatInChannel(pin/*, false, out ChatChannel channel*/);
-        //print(channelExists);
-        //if (channelExists)
-            chatClient.Connect(PhotonNetwork.PhotonServerSettings.AppSettings.AppIdChat, PhotonNetwork.AppVersion, new AuthenticationValues(user));
-        //else
-        //    print("Channel does not exist");
+        chatClient.Connect(PhotonNetwork.PhotonServerSettings.AppSettings.AppIdChat, PhotonNetwork.AppVersion, new AuthenticationValues(user));
     }
 
-    public void ConnectToChatAsHost(string user, string pin)
+    public void ConnectToChatAsHost(string user, string pin/*, string eventName, string eventDesc*/)
     {
-        //To be implemented
+        roomPin = pin;
+        print("Connecting now as host!");
+        chatClient.AuthValues = new Photon.Chat.AuthenticationValues(user);
+        ChatAppSettings settings = PhotonNetwork.PhotonServerSettings.AppSettings.GetChatSettings();
+        chatClient.Connect(PhotonNetwork.PhotonServerSettings.AppSettings.AppIdChat, PhotonNetwork.AppVersion, new AuthenticationValues(user));
+
+
     }
 
     public void SendPhotonMessage(InputField input)
@@ -80,7 +83,6 @@ public class ChatManager : MonoBehaviour, IChatClientListener
         Transform canvas = FindObjectOfType<Canvas>().transform;
         ChatWindow chatWindow = Instantiate(chatWindowPrefab, canvas).GetComponent<ChatWindow>();
         currentChatWindow = chatWindow;
-        //currentChatWindow.gameObject.SetActive(true);
     }
 
     public void OnDisconnected()
@@ -91,9 +93,21 @@ public class ChatManager : MonoBehaviour, IChatClientListener
     {
         print("Recieved " + messages[0] + " by " + senders[0]);
 
-        GameObject bubble = Instantiate(chatBubble, currentChatWindow.viewPortContent);
-        bubble.GetComponent<ChatBubble>().bubble.text = messages[0].ToString();
-        bubble.GetComponent<ChatBubble>().userName.text = "Sent by: " + senders[0];
+        //This message is a specifier for the event name
+        if (messages[0].ToString().Contains(currentChatWindow.eventNameId.ToString()))
+        {
+            currentChatWindow.eventNameBillboard.text = messages[0].ToString().Remove(0, 2);
+        }
+        else if(messages[0].ToString().Contains(currentChatWindow.eventDescriptionId.ToString()))
+        {
+
+        }
+        else
+        {
+            GameObject bubble = Instantiate(chatBubble, currentChatWindow.viewPortContent);
+            bubble.GetComponent<ChatBubble>().bubble.text = messages[0].ToString();
+            bubble.GetComponent<ChatBubble>().userName.text = "Sent by: " + senders[0];
+        }
     }
 
     public void OnPrivateMessage(string sender, object message, string channelName)
