@@ -15,7 +15,7 @@ public class RoomConnectPage : MonoBehaviour
 
     ChatManager chatManager;
 
-    bool pin = false, user = false;
+    bool pin = true /*false*/, user = false;
 
     private void Start()
     {
@@ -24,20 +24,22 @@ public class RoomConnectPage : MonoBehaviour
 
     public void WaitForPin()
     {
-        pin = false;
+        //pin = false;
     }
 
     public void CheckPin()
     {
-        if(pinCode.text.Length != 4)
-        {
-            pinError.SetActive(true);
-        }
-        else
-        {
-            pin = true;
-            pinError.SetActive(false);
-        }
+        //This part was commented out to try if using a room name instead of a pin code is better
+
+        //if(pinCode.text.Length != 4)
+        //{
+        //    pinError.SetActive(true);
+        //}
+        //else
+        //{
+        //    pin = true;
+        //    pinError.SetActive(false);
+        //}
 
         ActivateButton();
     }
