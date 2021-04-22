@@ -5,9 +5,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using SheetChat;
+using Assets.SheetChat;
 
 public class ChatManager : MonoBehaviour, IChatClientListener
 {
+    public ChatOperator operand;
+    public Text TestText;
+
+
     ChatClient chatClient;
     //[SerializeField] string userId;
     InputField Input;
@@ -22,6 +28,12 @@ public class ChatManager : MonoBehaviour, IChatClientListener
 
     void Start()
     {
+        operand.ReadEntry();
+        print(ChatOperator.sheetData);
+        TestText.text = ChatOperator.sheetData;
+
+
+
         chatClient = new ChatClient(this);
         
     }
