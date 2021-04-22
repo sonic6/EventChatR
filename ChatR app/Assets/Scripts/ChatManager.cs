@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using SheetChat;
-using Assets.SheetChat;
 
 public class ChatManager : MonoBehaviour, IChatClientListener
 {
@@ -28,55 +27,82 @@ public class ChatManager : MonoBehaviour, IChatClientListener
 
     void Start()
     {
-        operand.ReadEntry();
-        print(ChatOperator.sheetData);
-        TestText.text = ChatOperator.sheetData;
+        //operand.ReadHistory();
+        //print(ChatOperator.sheetData);
+        //TestText.text = ChatOperator.sheetData;
+        
 
-
-
-        chatClient = new ChatClient(this);
+        //chatClient = new ChatClient(this);
         
     }
 
     void Update()
     {
-        chatClient.Service();
+        //chatClient.Service();
     }
 
-    //Connects a user to a chat room with pin if the chat room exists
-    public void ConnectToChat(string user, string pin)
+    #region our own code for Google sheets methods
+
+    public void ConnectToSheet()
     {
-        roomPin = pin;
-        print("Connecting now!");
-        chatClient.AuthValues = new Photon.Chat.AuthenticationValues(user);
-        ChatAppSettings settings = PhotonNetwork.PhotonServerSettings.AppSettings.GetChatSettings();
-        
-        chatClient.Connect(PhotonNetwork.PhotonServerSettings.AppSettings.AppIdChat, PhotonNetwork.AppVersion, new AuthenticationValues(user));
+        roomConnectWindow.SetActive(false);
 
-        //ChatBot bot = new ChatBot(roomPin);
+        Transform canvas = FindObjectOfType<Canvas>().transform;
+        ChatWindow chatWindow = Instantiate(chatWindowPrefab, canvas).GetComponent<ChatWindow>();
+        currentChatWindow = chatWindow;
+
+
+        var sheetData  = operand.ReadHistory();
+
+        foreach (var row in sheetData)
+        {
+            //sheetData = row[0].ToString() + " " + row[1].ToString();
+            GameObject bubble = Instantiate(chatBubble, currentChatWindow.viewPortContent);
+            bubble.GetComponent<ChatBubble>().bubble.text = row[1].ToString();
+            bubble.GetComponent<ChatBubble>().userName.text = "Sent by: " + row[0].ToString();
+        }
     }
 
-    public void ConnectToChatAsHost(string user, string pin/*, string eventName, string eventDesc*/)
-    {
-        roomPin = pin;
-        print("Connecting now as host!");
-        chatClient.AuthValues = new Photon.Chat.AuthenticationValues(user);
-        ChatAppSettings settings = PhotonNetwork.PhotonServerSettings.AppSettings.GetChatSettings();
-        chatClient.Connect(PhotonNetwork.PhotonServerSettings.AppSettings.AppIdChat, PhotonNetwork.AppVersion, new AuthenticationValues(user));
+    #endregion
 
-        
-    }
+    //#region owr code for photon
 
-    public void SendPhotonMessage(InputField input)
-    {
-        chatClient.PublishMessage(roomPin, input.text);
-        GameObject bubble = Instantiate(chatBubble, currentChatWindow.viewPortContent);
-        bubble.GetComponent<ChatBubble>().bubble.text = input.text;
-        bubble.GetComponent<ChatBubble>().userName.text = "Sent by: " + chatClient.UserId;
+    ////Connects a user to a chat room with pin if the chat room exists
+    //public void ConnectToChat(string user, string pin)
+    //{
+    //    roomPin = pin;
+    //    print("Connecting now!");
+    //    chatClient.AuthValues = new Photon.Chat.AuthenticationValues(user);
+    //    ChatAppSettings settings = PhotonNetwork.PhotonServerSettings.AppSettings.GetChatSettings();
 
-        input.text = null;
-    }
-    
+    //    chatClient.Connect(PhotonNetwork.PhotonServerSettings.AppSettings.AppIdChat, PhotonNetwork.AppVersion, new AuthenticationValues(user));
+
+    //    //ChatBot bot = new ChatBot(roomPin);
+    //}
+
+    //public void ConnectToChatAsHost(string user, string pin/*, string eventName, string eventDesc*/)
+    //{
+    //    roomPin = pin;
+    //    print("Connecting now as host!");
+    //    chatClient.AuthValues = new Photon.Chat.AuthenticationValues(user);
+    //    ChatAppSettings settings = PhotonNetwork.PhotonServerSettings.AppSettings.GetChatSettings();
+    //    chatClient.Connect(PhotonNetwork.PhotonServerSettings.AppSettings.AppIdChat, PhotonNetwork.AppVersion, new AuthenticationValues(user));
+
+
+    //}
+
+    //public void SendPhotonMessage(InputField input)
+    //{
+    //    chatClient.PublishMessage(roomPin, input.text);
+    //    GameObject bubble = Instantiate(chatBubble, currentChatWindow.viewPortContent);
+    //    bubble.GetComponent<ChatBubble>().bubble.text = input.text;
+    //    bubble.GetComponent<ChatBubble>().userName.text = "Sent by: " + chatClient.UserId;
+
+    //    input.text = null;
+    //}
+
+    //#endregion
+
     #region Photon Callback Methods
 
     public void DebugReturn(DebugLevel level, string message)

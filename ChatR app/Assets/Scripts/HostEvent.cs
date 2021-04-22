@@ -21,7 +21,7 @@ public class HostEvent : MonoBehaviour
         int random = Random.Range(1000, 9999);
         roomPin = random.ToString();
 
-        manager.ConnectToChatAsHost(hostName.text, roomPin/*, eventName.text, eventDescription.text*/);
-        print(roomPin);
+        //manager.ConnectToChatAsHost(hostName.text, roomPin/*, eventName.text, eventDescription.text*/);
+        //print(roomPin);
     }
 }

@@ -1803,6 +1803,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Scopes:
   - https://www.googleapis.com/auth/spreadsheets
+  json: {fileID: 4900000, guid: 9e450838b52a68b4cbb0d5983d916e6a, type: 3}
 --- !u!1 &1284049637
 GameObject:
   m_ObjectHideFlags: 0

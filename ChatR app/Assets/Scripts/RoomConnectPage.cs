@@ -80,6 +80,7 @@ public class RoomConnectPage : MonoBehaviour
 
     public void ConnectToRoom()
     {
-        chatManager.ConnectToChat(userName.text, pinCode.text);
+        //chatManager.ConnectToChat(userName.text, pinCode.text);
+        chatManager.ConnectToSheet();
     }
 }

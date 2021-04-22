@@ -9,8 +9,9 @@ using Google.Apis.Sheets.v4;
 using Google.Apis.Auth.OAuth2;
 using System.IO;
 using UnityEngine.Networking;
+using System.Net;
 
-namespace Assets.SheetChat
+namespace SheetChat
 {
     public class ChatOperator : MonoBehaviour
     {
@@ -23,22 +24,16 @@ namespace Assets.SheetChat
 
         public static SheetsService service;
 
-        //UnityWebRequest path;
-
-        //private void Awake()
-        //{
-        //    path = new UnityWebRequest("chatr-app-311418-f790eeb3b66e.json");
-        //    print(path.url);
-        //}
-
+        public TextAsset json; //Making a reference to a json file keeps unity from deleting it when making a build
+        
         public ChatOperator()
         {
+            
             service = new SheetsService();
             GoogleCredential credential;
 
-
-            //E:/Uni projects - uppsala/Agile Methods/EventChatR/ChatR app/Assets/SheetChat/chatr-app-311418-f790eeb3b66e.json
-            using (var stream = new FileStream(/*path.url*/"E:/Uni projects - uppsala/Agile Methods/EventChatR/ChatR app/Assets/SheetChat/chatr-app-311418-f790eeb3b66e.json", FileMode.Open, FileAccess.Read))
+            
+            using (var stream = new FileStream("Assets/SheetChat/chatr-app-311418-f790eeb3b66e.json", FileMode.Open, FileAccess.Read))
             {
                 credential = GoogleCredential.FromStream(stream).CreateScoped(Scopes);
             }
@@ -49,16 +44,12 @@ namespace Assets.SheetChat
                 ApplicationName = Applicationname,
             });
 
-            print(service.ToString());
         }
 
-        private void button1_Click(object sender, EventArgs e)
-        {
-            //ReadEntry();
-            //NewSheet();
-        }
-
-        public void ReadEntry()
+        /// <summary>
+        /// Reads all the chat bubbles from history
+        /// </summary>
+        public IList<IList<object>> ReadHistory()
         {
             var range = $"{sheet}!A1:B2";
             var request = service.Spreadsheets.Values.Get(spreadSheetId, range);
@@ -67,15 +58,16 @@ namespace Assets.SheetChat
             var values = response.Values;
             if (values != null && values.Count > 0)
             {
-                foreach (var row in values)
-                {
-                    sheetData = row[0].ToString() + " " + row[1].ToString();
-                    //Console.WriteLine("{0} says {1}", row[0], row[1]);
-                }
+                //foreach (var row in values)
+                //{
+                //    sheetData = row[0].ToString() + " " + row[1].ToString();
+                //}
+                return values;
             }
             else
             {
                 Console.WriteLine("It didn't work");
+                return null;
             }
         }
     }

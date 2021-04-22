@@ -28,7 +28,7 @@ public class ChatWindow : MonoBehaviour
     //Sends a user written message to the ChatManger which in turn sends it online
     public void MessageToManager(InputField input)
     {
-        manager.SendPhotonMessage(input);
+        //manager.SendPhotonMessage(input);
     }
 
     private void OnEnable()
