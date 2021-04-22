@@ -17,7 +17,7 @@ public class ChatManager : MonoBehaviour, IChatClientListener
 
     [SerializeField] GameObject chatBubble; //A reference to the chatBubble prefab
     [SerializeField] GameObject chatWindowPrefab; //A reference to the chatWindow prefab
-
+    
     
 
     void Start()
@@ -40,6 +40,8 @@ public class ChatManager : MonoBehaviour, IChatClientListener
         ChatAppSettings settings = PhotonNetwork.PhotonServerSettings.AppSettings.GetChatSettings();
         
         chatClient.Connect(PhotonNetwork.PhotonServerSettings.AppSettings.AppIdChat, PhotonNetwork.AppVersion, new AuthenticationValues(user));
+
+        //ChatBot bot = new ChatBot(roomPin);
     }
 
     public void ConnectToChatAsHost(string user, string pin/*, string eventName, string eventDesc*/)
@@ -50,7 +52,7 @@ public class ChatManager : MonoBehaviour, IChatClientListener
         ChatAppSettings settings = PhotonNetwork.PhotonServerSettings.AppSettings.GetChatSettings();
         chatClient.Connect(PhotonNetwork.PhotonServerSettings.AppSettings.AppIdChat, PhotonNetwork.AppVersion, new AuthenticationValues(user));
 
-
+        
     }
 
     public void SendPhotonMessage(InputField input)
@@ -62,8 +64,7 @@ public class ChatManager : MonoBehaviour, IChatClientListener
 
         input.text = null;
     }
-
-
+    
     #region Photon Callback Methods
 
     public void DebugReturn(DebugLevel level, string message)
@@ -93,20 +94,27 @@ public class ChatManager : MonoBehaviour, IChatClientListener
     {
         print("Recieved " + messages[0] + " by " + senders[0]);
 
-        //This message is a specifier for the event name
-        if (messages[0].ToString().Contains(currentChatWindow.eventNameId.ToString()))
-        {
-            currentChatWindow.eventNameBillboard.text = messages[0].ToString().Remove(0, 2);
-        }
-        else if(messages[0].ToString().Contains(currentChatWindow.eventDescriptionId.ToString()))
-        {
+        ////This message is a specifier for the event name
+        //if (messages[0].ToString().Contains(currentChatWindow.eventNameId.ToString()))
+        //{
+        //    currentChatWindow.eventNameBillboard.text = messages[0].ToString().Remove(0, 2);
+        //}
+        //else if(messages[0].ToString().Contains(currentChatWindow.eventDescriptionId.ToString()))
+        //{
 
-        }
-        else
+        //}
+        //else
+        //{
+            
+        //}
+
+        GameObject bubble = Instantiate(chatBubble, currentChatWindow.viewPortContent);
+        bubble.GetComponent<ChatBubble>().bubble.text = messages[0].ToString();
+        bubble.GetComponent<ChatBubble>().userName.text = "Sent by: " + senders[0];
+
+        foreach(object message in messages)
         {
-            GameObject bubble = Instantiate(chatBubble, currentChatWindow.viewPortContent);
-            bubble.GetComponent<ChatBubble>().bubble.text = messages[0].ToString();
-            bubble.GetComponent<ChatBubble>().userName.text = "Sent by: " + senders[0];
+            print(message.ToString());
         }
     }
 
