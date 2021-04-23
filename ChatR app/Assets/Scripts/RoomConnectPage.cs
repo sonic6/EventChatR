@@ -68,7 +68,11 @@ public class RoomConnectPage : MonoBehaviour
     private void ActivateButton()
     {
         if (pin && user)
+        {
+            chatManager.userId = userName.text;
+            chatManager.roomPin = pinCode.text;
             connectionButton.interactable = true;
+        }
         else
             connectionButton.interactable = false;
     }

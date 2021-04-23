@@ -943,8 +943,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hostName: {fileID: 1245762113}
-  eventName: {fileID: 0}
-  eventDescription: {fileID: 0}
+  eventName: {fileID: 1359984697}
+  eventDescription: {fileID: 833600670}
 --- !u!1 &1048977899
 GameObject:
   m_ObjectHideFlags: 0
@@ -1783,6 +1783,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   operand: {fileID: 1260913377}
   TestText: {fileID: 1342145746}
+  userId: 
+  roomPin: 
   currentChatWindow: {fileID: 0}
   roomConnectWindow: {fileID: 1344941652}
   chatBubble: {fileID: 3345894174530263492, guid: bbde797e376f37e4d93cac73a05d318d,
@@ -1801,8 +1803,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a106c5f06e98c1441b4e4c0fd774a383, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Scopes:
-  - https://www.googleapis.com/auth/spreadsheets
+  sheet: Chat
   json: {fileID: 4900000, guid: 9e450838b52a68b4cbb0d5983d916e6a, type: 3}
 --- !u!1 &1284049637
 GameObject:
@@ -2137,7 +2138,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1342145744
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3505,7 +3506,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &3554752826351146613
 RectTransform:
   m_ObjectHideFlags: 0

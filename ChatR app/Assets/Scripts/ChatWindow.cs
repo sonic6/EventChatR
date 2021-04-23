@@ -29,6 +29,7 @@ public class ChatWindow : MonoBehaviour
     public void MessageToManager(InputField input)
     {
         //manager.SendPhotonMessage(input);
+        manager.operand.WriteMessage( manager.userId, input.text);
     }
 
     private void OnEnable()

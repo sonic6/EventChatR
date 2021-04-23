@@ -14,9 +14,9 @@ public class ChatManager : MonoBehaviour, IChatClientListener
 
 
     ChatClient chatClient;
-    //[SerializeField] string userId;
+    public string userId;
     InputField Input;
-    private string roomPin;
+    [HideInInspector] public string roomPin;
     [HideInInspector] public ChatWindow currentChatWindow;
     [SerializeField] GameObject roomConnectWindow;
 
@@ -51,7 +51,7 @@ public class ChatManager : MonoBehaviour, IChatClientListener
         ChatWindow chatWindow = Instantiate(chatWindowPrefab, canvas).GetComponent<ChatWindow>();
         currentChatWindow = chatWindow;
 
-
+        operand.sheet = roomPin;
         var sheetData  = operand.ReadHistory();
 
         foreach (var row in sheetData)
@@ -80,16 +80,17 @@ public class ChatManager : MonoBehaviour, IChatClientListener
     //    //ChatBot bot = new ChatBot(roomPin);
     //}
 
-    //public void ConnectToChatAsHost(string user, string pin/*, string eventName, string eventDesc*/)
-    //{
-    //    roomPin = pin;
-    //    print("Connecting now as host!");
-    //    chatClient.AuthValues = new Photon.Chat.AuthenticationValues(user);
-    //    ChatAppSettings settings = PhotonNetwork.PhotonServerSettings.AppSettings.GetChatSettings();
-    //    chatClient.Connect(PhotonNetwork.PhotonServerSettings.AppSettings.AppIdChat, PhotonNetwork.AppVersion, new AuthenticationValues(user));
+    public void ConnectToChatAsHost(string user, string sheetName/*, string eventName, string eventDesc*/)
+    {
+        roomPin = sheetName;
+        print("Connecting now as host!");
+        operand.CreateNewSheet(sheetName);
+        //chatClient.AuthValues = new Photon.Chat.AuthenticationValues(user);
+        //ChatAppSettings settings = PhotonNetwork.PhotonServerSettings.AppSettings.GetChatSettings();
+        //chatClient.Connect(PhotonNetwork.PhotonServerSettings.AppSettings.AppIdChat, PhotonNetwork.AppVersion, new AuthenticationValues(user));
 
 
-    //}
+    }
 
     //public void SendPhotonMessage(InputField input)
     //{
