@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Android;
 using SheetChat;
 
 public class ChatManager : MonoBehaviour, IChatClientListener
@@ -14,31 +15,32 @@ public class ChatManager : MonoBehaviour, IChatClientListener
 
 
     ChatClient chatClient;
-    public string userId;
-    InputField Input;
+    [HideInInspector] public string userId;
     [HideInInspector] public string roomPin;
     [HideInInspector] public ChatWindow currentChatWindow;
     [SerializeField] GameObject roomConnectWindow;
+    [SerializeField] HostEvent hostRoomWindow;
 
-    [SerializeField] GameObject chatBubble; //A reference to the chatBubble prefab
-    [SerializeField] GameObject chatWindowPrefab; //A reference to the chatWindow prefab
-    
-    
+    #region prefab references
+    public GameObject chatBubble; //A reference to the chatBubble prefab
+    public GameObject chatWindowPrefab; //A reference to the chatWindow prefab
+    #endregion
+
 
     void Start()
     {
         //operand.ReadHistory();
         //print(ChatOperator.sheetData);
         //TestText.text = ChatOperator.sheetData;
-        
 
-        //chatClient = new ChatClient(this);
-        
+
+        chatClient = new ChatClient(this);
+
     }
 
     void Update()
     {
-        //chatClient.Service();
+        chatClient.Service();
     }
 
     #region our own code for Google sheets methods
@@ -47,12 +49,10 @@ public class ChatManager : MonoBehaviour, IChatClientListener
     {
         roomConnectWindow.SetActive(false);
 
-        Transform canvas = FindObjectOfType<Canvas>().transform;
-        ChatWindow chatWindow = Instantiate(chatWindowPrefab, canvas).GetComponent<ChatWindow>();
-        currentChatWindow = chatWindow;
+        CreateChatWindow();
 
-        operand.sheet = roomPin;
-        var sheetData  = operand.ReadHistory();
+        //operand.sheet = roomPin;
+        var sheetData  = operand.ReadHistory(roomPin);
 
         foreach (var row in sheetData)
         {
@@ -60,49 +60,57 @@ public class ChatManager : MonoBehaviour, IChatClientListener
             GameObject bubble = Instantiate(chatBubble, currentChatWindow.viewPortContent);
             bubble.GetComponent<ChatBubble>().bubble.text = row[1].ToString();
             bubble.GetComponent<ChatBubble>().userName.text = "Sent by: " + row[0].ToString();
+            currentChatWindow.messageCount++;
         }
     }
 
     #endregion
+    
 
-    //#region owr code for photon
+    /// <summary>
+    /// Connects a user to a chat room with pin
+    /// </summary>
+    /// <param name="user">represents a username</param>
+    /// <param name="pin">The name of the chatroom/sheet</param>
+    public void ConnectToPhoton(string user, string pin)
+    {
+        roomPin = pin;
+        print("Connecting now!");
+        chatClient.AuthValues = new Photon.Chat.AuthenticationValues(user);
+        ChatAppSettings settings = PhotonNetwork.PhotonServerSettings.AppSettings.GetChatSettings();
 
-    ////Connects a user to a chat room with pin if the chat room exists
-    //public void ConnectToChat(string user, string pin)
-    //{
-    //    roomPin = pin;
-    //    print("Connecting now!");
-    //    chatClient.AuthValues = new Photon.Chat.AuthenticationValues(user);
-    //    ChatAppSettings settings = PhotonNetwork.PhotonServerSettings.AppSettings.GetChatSettings();
+        chatClient.Connect(PhotonNetwork.PhotonServerSettings.AppSettings.AppIdChat, PhotonNetwork.AppVersion, new AuthenticationValues(user));
 
-    //    chatClient.Connect(PhotonNetwork.PhotonServerSettings.AppSettings.AppIdChat, PhotonNetwork.AppVersion, new AuthenticationValues(user));
-
-    //    //ChatBot bot = new ChatBot(roomPin);
-    //}
+        //ChatBot bot = new ChatBot(roomPin);
+    }
 
     public void ConnectToChatAsHost(string user, string sheetName/*, string eventName, string eventDesc*/)
     {
         roomPin = sheetName;
         print("Connecting now as host!");
-        operand.CreateNewSheet(sheetName);
-        //chatClient.AuthValues = new Photon.Chat.AuthenticationValues(user);
-        //ChatAppSettings settings = PhotonNetwork.PhotonServerSettings.AppSettings.GetChatSettings();
-        //chatClient.Connect(PhotonNetwork.PhotonServerSettings.AppSettings.AppIdChat, PhotonNetwork.AppVersion, new AuthenticationValues(user));
+        bool roomAvialable = operand.CreateNewSheet(sheetName); //Checks if the room name is already taken and creates it if not
+        hostRoomWindow.warningText.SetActive(!roomAvialable);
 
+        if(roomAvialable)
+        {
+            chatClient.AuthValues = new Photon.Chat.AuthenticationValues(user);
+            ChatAppSettings settings = PhotonNetwork.PhotonServerSettings.AppSettings.GetChatSettings();
+            chatClient.Connect(PhotonNetwork.PhotonServerSettings.AppSettings.AppIdChat, PhotonNetwork.AppVersion, new AuthenticationValues(user));
 
+            CreateChatWindow();
+        }
+
+        
     }
 
-    //public void SendPhotonMessage(InputField input)
-    //{
-    //    chatClient.PublishMessage(roomPin, input.text);
-    //    GameObject bubble = Instantiate(chatBubble, currentChatWindow.viewPortContent);
-    //    bubble.GetComponent<ChatBubble>().bubble.text = input.text;
-    //    bubble.GetComponent<ChatBubble>().userName.text = "Sent by: " + chatClient.UserId;
-
-    //    input.text = null;
-    //}
-
-    //#endregion
+    void CreateChatWindow()
+    {
+        Transform canvas = FindObjectOfType<Canvas>().transform;
+        ChatWindow chatWindow = Instantiate(chatWindowPrefab, canvas).GetComponent<ChatWindow>();
+        currentChatWindow = chatWindow;
+        currentChatWindow.SetChatClient(chatClient);
+        currentChatWindow.eventNameBillboard.text = roomPin;
+    }
 
     #region Photon Callback Methods
 
@@ -116,13 +124,12 @@ public class ChatManager : MonoBehaviour, IChatClientListener
 
     public void OnConnected()
     {
-        print("Connected");
+        print("Connected to Photon");
         chatClient.Subscribe(roomPin);
         roomConnectWindow.SetActive(false);
+        hostRoomWindow.gameObject.SetActive(false);
 
-        Transform canvas = FindObjectOfType<Canvas>().transform;
-        ChatWindow chatWindow = Instantiate(chatWindowPrefab, canvas).GetComponent<ChatWindow>();
-        currentChatWindow = chatWindow;
+        
     }
 
     public void OnDisconnected()
@@ -133,28 +140,15 @@ public class ChatManager : MonoBehaviour, IChatClientListener
     {
         print("Recieved " + messages[0] + " by " + senders[0]);
 
-        ////This message is a specifier for the event name
-        //if (messages[0].ToString().Contains(currentChatWindow.eventNameId.ToString()))
-        //{
-        //    currentChatWindow.eventNameBillboard.text = messages[0].ToString().Remove(0, 2);
-        //}
-        //else if(messages[0].ToString().Contains(currentChatWindow.eventDescriptionId.ToString()))
-        //{
+        currentChatWindow.CreateChatBubble();
+        //GameObject bubble = Instantiate(chatBubble, currentChatWindow.viewPortContent);
+        //bubble.GetComponent<ChatBubble>().bubble.text = messages[0].ToString();
+        //bubble.GetComponent<ChatBubble>().userName.text = "Sent by: " + senders[0];
 
-        //}
-        //else
+        //foreach (object message in messages)
         //{
-            
+        //    print(message.ToString());
         //}
-
-        GameObject bubble = Instantiate(chatBubble, currentChatWindow.viewPortContent);
-        bubble.GetComponent<ChatBubble>().bubble.text = messages[0].ToString();
-        bubble.GetComponent<ChatBubble>().userName.text = "Sent by: " + senders[0];
-
-        foreach(object message in messages)
-        {
-            print(message.ToString());
-        }
     }
 
     public void OnPrivateMessage(string sender, object message, string channelName)
@@ -168,7 +162,7 @@ public class ChatManager : MonoBehaviour, IChatClientListener
 
     public void OnSubscribed(string[] channels, bool[] results)
     {
-        print("Subscribed to channel " + channels[0]);
+        //print("Subscribed to channel " + channels[0]);
     }
 
     public void OnUnsubscribed(string[] channels)

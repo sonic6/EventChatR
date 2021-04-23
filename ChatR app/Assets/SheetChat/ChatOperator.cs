@@ -11,6 +11,7 @@ using System.IO;
 using UnityEngine.Networking;
 using System.Net;
 using Google.Apis.Sheets.v4.Data;
+using Photon.Chat;
 
 namespace SheetChat
 {
@@ -21,19 +22,13 @@ namespace SheetChat
         string[] Scopes = { SheetsService.Scope.Spreadsheets };
         static readonly string Applicationname = "ChatR";
         static readonly string spreadSheetId = "1xtd8yhlRJ_OX3rRlmObU1iJO7aemv9asjbbgsezjykM";
-
-        /// <summary>
-        /// A sheet from a Google spreadsheet that is used as a chat room
-        /// </summary>
-        [HideInInspector] public string sheet; 
-
+        
         public static SheetsService service;
 
         public TextAsset json; //Making a reference to a json file keeps unity from deleting it when making a build
         
         public ChatOperator()
         {
-            
             service = new SheetsService();
             GoogleCredential credential;
 
@@ -54,9 +49,9 @@ namespace SheetChat
         /// <summary>
         /// Reads all the chat bubbles from history
         /// </summary>
-        public IList<IList<object>> ReadHistory()
+        public IList<IList<object>> ReadHistory(string sheetName)
         {
-            var range = $"{sheet}!A:B";
+            var range = $"{sheetName}!A:B";
             var request = service.Spreadsheets.Values.Get(spreadSheetId, range);
 
             var response = request.Execute();
@@ -76,9 +71,26 @@ namespace SheetChat
             }
         }
 
-        public void WriteMessage(string name, string message)
+        public IList<object> ReadMessageAtLine(string sheetName, int line)
         {
-            var range = $"{sheet}!A:B";
+            //string lineConstruct = "A"+line+":B"+line;
+            var range = $"{sheetName}!A:B"/* + lineConstruct*/;
+            var request = service.Spreadsheets.Values.Get(spreadSheetId, range);
+
+            var response = request.Execute();
+            var values = response.Values;
+            return values[line];
+            //if (values != null && values.Count > 0)
+            //{
+            //    //string username = values[line][0].ToString();
+            //    //string message = values[line][1].ToString();
+                
+            //}
+        }
+
+        public void WriteMessage(string name, string message, string sheetName, ChatClient photon)
+        {
+            var range = $"{sheetName}!A:B";
             var valueRange = new ValueRange();
 
             var objectList = new List<object>() { name, message };
@@ -89,6 +101,8 @@ namespace SheetChat
                 var appendRequest = service.Spreadsheets.Values.Append(valueRange, spreadSheetId, range);
                 appendRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
                 var appendResponse = appendRequest.Execute();
+
+                photon.PublishMessage(sheetName, "Message recieved");
             }
             catch (Exception e)
             {
@@ -98,9 +112,9 @@ namespace SheetChat
         }
 
         /// <summary>
-        /// Sheets are used as chatrooms. Creating a new sheet means creating a new chatroom
+        /// Sheets are used as chatrooms. Creating a new sheet means creating a new chatroom. This method returns false if the chatroom already exists
         /// </summary>
-        public void CreateNewSheet(string newSheetName)
+        public bool CreateNewSheet(string newSheetName)
         {
             try
             {
@@ -113,11 +127,12 @@ namespace SheetChat
 
                 var batchUpdateRequest = service.Spreadsheets.BatchUpdate(batchUpdateSpreadsheetRequest, spreadSheetId);
                 batchUpdateRequest.Execute();
+                return true;
             }
             catch (Exception e)
             {
-                print(e);
-                print("Choose a different name");
+                print("This event name is currently taken");
+                return false;
             }
         }
     }

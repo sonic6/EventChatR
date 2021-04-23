@@ -710,6 +710,7 @@ MonoBehaviour:
   roomPin: 
   eventNameId: 0
   eventDescriptionId: 0
+  messageCount: 0
 --- !u!1 &7565216302647455253
 GameObject:
   m_ObjectHideFlags: 0
@@ -840,7 +841,7 @@ MonoBehaviour:
   m_ChildAlignment: 0
   m_Spacing: 0
   m_ChildForceExpandWidth: 1
-  m_ChildForceExpandHeight: 1
+  m_ChildForceExpandHeight: 0
   m_ChildControlWidth: 0
   m_ChildControlHeight: 0
   m_ChildScaleWidth: 0
@@ -1123,8 +1124,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 7565216302874748578}
   m_HandleRect: {fileID: 7565216302874748577}
   m_Direction: 2
-  m_Value: 1
-  m_Size: 1
+  m_Value: 1.0000008
+  m_Size: 0.74700004
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:

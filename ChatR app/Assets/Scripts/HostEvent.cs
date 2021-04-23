@@ -10,6 +10,7 @@ public class HostEvent : MonoBehaviour
     [SerializeField] InputField hostName;
     [SerializeField] InputField eventName;
     [SerializeField] InputField eventDescription;
+    public GameObject warningText;
 
     private void Start()
     {
@@ -20,7 +21,7 @@ public class HostEvent : MonoBehaviour
     {
         //int random = Random.Range(1000, 9999);
         //roomPin = random.ToString();
-
+        manager.userId = hostName.text;
         manager.ConnectToChatAsHost(hostName.text, eventName.text/*, eventName.text, eventDescription.text*/);
         //print(roomPin);
     }
