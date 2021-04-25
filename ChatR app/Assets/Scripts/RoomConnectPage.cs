@@ -29,18 +29,6 @@ public class RoomConnectPage : MonoBehaviour
 
     public void CheckPin()
     {
-        //This part was commented out to try if using a room name instead of a pin code is better
-
-        //if(pinCode.text.Length != 4)
-        //{
-        //    pinError.SetActive(true);
-        //}
-        //else
-        //{
-        //    pin = true;
-        //    pinError.SetActive(false);
-        //}
-
         ActivateButton();
     }
 
@@ -84,7 +72,6 @@ public class RoomConnectPage : MonoBehaviour
 
     public void ConnectToRoom()
     {
-        //chatManager.ConnectToChat(userName.text, pinCode.text);
         chatManager.ConnectToSheet();
     }
 }

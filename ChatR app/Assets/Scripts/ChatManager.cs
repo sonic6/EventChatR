@@ -1,12 +1,10 @@
 ﻿using ExitGames.Client.Photon;
 using Photon.Chat;
 using Photon.Pun;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Android;
 using SheetChat;
+using System;
 
 public class ChatManager : MonoBehaviour, IChatClientListener
 {
@@ -20,6 +18,7 @@ public class ChatManager : MonoBehaviour, IChatClientListener
     [HideInInspector] public ChatWindow currentChatWindow;
     [SerializeField] GameObject roomConnectWindow;
     [SerializeField] HostEvent hostRoomWindow;
+    [SerializeField] Text enterRoomError;
 
     #region prefab references
     public GameObject chatBubble; //A reference to the chatBubble prefab
@@ -29,42 +28,36 @@ public class ChatManager : MonoBehaviour, IChatClientListener
 
     void Start()
     {
-        //operand.ReadHistory();
-        //print(ChatOperator.sheetData);
-        //TestText.text = ChatOperator.sheetData;
-
-
         chatClient = new ChatClient(this);
-
     }
 
     void Update()
     {
         chatClient.Service();
     }
-
-    #region our own code for Google sheets methods
+    
 
     public void ConnectToSheet()
     {
-        roomConnectWindow.SetActive(false);
-
-        CreateChatWindow();
-
-        //operand.sheet = roomPin;
-        var sheetData  = operand.ReadHistory(roomPin);
-
-        foreach (var row in sheetData)
+        try
         {
-            //sheetData = row[0].ToString() + " " + row[1].ToString();
-            GameObject bubble = Instantiate(chatBubble, currentChatWindow.viewPortContent);
-            bubble.GetComponent<ChatBubble>().bubble.text = row[1].ToString();
-            bubble.GetComponent<ChatBubble>().userName.text = "Sent by: " + row[0].ToString();
-            currentChatWindow.messageCount++;
+            var sheetData = operand.ReadHistory(roomPin);
+            roomConnectWindow.SetActive(false);
+            CreateChatWindow();
+            foreach (var row in sheetData)
+            {
+                GameObject bubble = Instantiate(chatBubble, currentChatWindow.viewPortContent);
+                bubble.GetComponent<ChatBubble>().bubble.text = row[1].ToString();
+                bubble.GetComponent<ChatBubble>().userName.text = "Sent by: " + row[0].ToString();
+                currentChatWindow.messageCount++;
+            }
         }
+        catch (Exception e)
+        {
+            enterRoomError.gameObject.SetActive(true);
+        }
+        
     }
-
-    #endregion
     
 
     /// <summary>

@@ -34,15 +34,13 @@ public class ChatWindow : MonoBehaviour
     //Sends a user written message to the ChatManger which in turn sends it online
     public void MessageToManager(InputField input)
     {
-        //manager.SendPhotonMessage(input);
         manager.operand.WriteMessage( manager.userId, input.text, roomPin, client);
         
     }
 
     public void CreateChatBubble()
     {
-        print("debug");
-        IList<object> messageLine = manager.operand.ReadMessageAtLine(roomPin, messageCount/* - 1*/);
+        IList<object> messageLine = manager.operand.ReadMessageAtLine(roomPin, messageCount);
 
         GameObject bubble = Instantiate(manager.chatBubble, manager.currentChatWindow.viewPortContent);
         bubble.GetComponent<ChatBubble>().bubble.text = messageLine[1].ToString();
