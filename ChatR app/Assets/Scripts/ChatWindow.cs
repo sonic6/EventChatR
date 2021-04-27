@@ -13,12 +13,12 @@ public class ChatWindow : MonoBehaviour
     public Text eventNameBillboard;
     public Text eventDescriptionBillboard;
 
-    [HideInInspector] public string eventName;
-    [HideInInspector] public string eventDescription;
+    //[HideInInspector] public string eventName;
+    //[HideInInspector] public string eventDescription;
     [HideInInspector] public string roomPin;
 
-    [HideInInspector] public int eventNameId;
-    [HideInInspector] public int eventDescriptionId;
+    //[HideInInspector] public int eventNameId;
+    //[HideInInspector] public int eventDescriptionId;
 
     [HideInInspector] public int messageCount = 0;
 
@@ -31,6 +31,15 @@ public class ChatWindow : MonoBehaviour
         print(messageCount);
     }
 
+    private void Update()
+    {
+        // Check if Back was pressed this frame
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            eventDescriptionBillboard.transform.parent.gameObject.SetActive(false);
+        }
+    }
+
     //Sends a user written message to the ChatManger which in turn sends it online
     public void MessageToManager(InputField input)
     {
@@ -40,12 +49,20 @@ public class ChatWindow : MonoBehaviour
 
     public void CreateChatBubble()
     {
-        IList<object> messageLine = manager.operand.ReadMessageAtLine(roomPin, messageCount);
+        string range = $"{roomPin}!A:B";
+        IList<object> messageLine = manager.operand.ReadAtLine(roomPin, messageCount, $"{roomPin}!A:B");
 
         GameObject bubble = Instantiate(manager.chatBubble, manager.currentChatWindow.viewPortContent);
         bubble.GetComponent<ChatBubble>().bubble.text = messageLine[1].ToString();
         bubble.GetComponent<ChatBubble>().userName.text = "Sent by: " + messageLine[0].ToString();
         manager.currentChatWindow.messageCount++;
+    }
+
+    public void ReadDescription()
+    {
+        string range = $"{roomPin}!G:G";
+        IList<object> descriptionLine = manager.operand.ReadAtLine(roomPin, 0, range);
+        eventDescriptionBillboard.text = descriptionLine[0].ToString();
     }
 
     private void OnEnable()

@@ -77,11 +77,11 @@ public class ChatManager : MonoBehaviour, IChatClientListener
         //ChatBot bot = new ChatBot(roomPin);
     }
 
-    public void ConnectToChatAsHost(string user, string sheetName/*, string eventName, string eventDesc*/)
+    public void ConnectToChatAsHost(string user, string sheetName, string eventDesc)
     {
         roomPin = sheetName;
         print("Connecting now as host!");
-        bool roomAvialable = operand.CreateNewSheet(sheetName); //Checks if the room name is already taken and creates it if not
+        bool roomAvialable = operand.CreateNewSheet(sheetName, eventDesc); //Checks if the room name is already taken and creates it if not
         hostRoomWindow.warningText.SetActive(!roomAvialable);
 
         if(roomAvialable)

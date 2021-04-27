@@ -54,9 +54,15 @@ namespace SheetChat
             }
         }
 
-        public IList<object> ReadMessageAtLine(string sheetName, int line)
+        /// <summary>
+        /// Reads data from the spreadsheet at a specific line and from a specific sheet
+        /// </summary>
+        /// <param name="sheetName"></param>
+        /// <param name="line"></param>
+        /// <returns></returns>
+        public IList<object> ReadAtLine(string sheetName, int line, string range)
         {
-            var range = $"{sheetName}!A:B";
+            //var range = $"{sheetName}!A:B";
             var request = service.Spreadsheets.Values.Get(spreadSheetId, range);
 
             var response = request.Execute();
@@ -90,10 +96,11 @@ namespace SheetChat
         /// <summary>
         /// Sheets are used as chatrooms. Creating a new sheet means creating a new chatroom. This method returns false if the chatroom already exists
         /// </summary>
-        public bool CreateNewSheet(string newSheetName)
+        public bool CreateNewSheet(string newSheetName, string description)
         {
             try
             {
+                #region creates new sheet
                 var addSheetRequest = new AddSheetRequest();
                 addSheetRequest.Properties = new SheetProperties();
                 addSheetRequest.Properties.Title = newSheetName;
@@ -103,6 +110,10 @@ namespace SheetChat
 
                 var batchUpdateRequest = service.Spreadsheets.BatchUpdate(batchUpdateSpreadsheetRequest, spreadSheetId);
                 batchUpdateRequest.Execute();
+                #endregion
+
+                AddSheetDescription(newSheetName, description);
+
                 return true;
             }
             catch (Exception e)
@@ -110,6 +121,25 @@ namespace SheetChat
                 print("This event name is currently taken");
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Adds a description on the G column in a specific sheet
+        /// </summary>
+        /// <param name="sheetName"></param>
+        /// <param name="description"></param>
+        private void AddSheetDescription(string sheetName, string description)
+        {
+            var range = $"{sheetName}!G:G";
+            var valueRange = new ValueRange();
+
+            print(description);
+            var objectList = new List<object>() { description };
+            valueRange.Values = new List<IList<object>> { objectList };
+
+            var appendRequest = service.Spreadsheets.Values.Append(valueRange, spreadSheetId, range);
+            appendRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
+            var appendResponse = appendRequest.Execute();
         }
     }
 }
