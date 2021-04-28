@@ -12,14 +12,8 @@ public class ChatWindow : MonoBehaviour
 
     public Text eventNameBillboard;
     public Text eventDescriptionBillboard;
-
-    //[HideInInspector] public string eventName;
-    //[HideInInspector] public string eventDescription;
+    
     [HideInInspector] public string roomPin;
-
-    //[HideInInspector] public int eventNameId;
-    //[HideInInspector] public int eventDescriptionId;
-
     [HideInInspector] public int messageCount = 0;
 
     void Start()
@@ -43,8 +37,11 @@ public class ChatWindow : MonoBehaviour
     //Sends a user written message to the ChatManger which in turn sends it online
     public void MessageToManager(InputField input)
     {
-        manager.operand.WriteMessage( manager.userId, input.text, roomPin, client);
-        
+        if (input.text != string.Empty)
+        {
+            manager.operand.WriteMessage(manager.userId, input.text, roomPin, client);
+            input.text = string.Empty;
+        }
     }
 
     public void CreateChatBubble()
