@@ -9,10 +9,9 @@ using System;
 public class ChatManager : MonoBehaviour, IChatClientListener
 {
     public ChatOperator operand;
-    public Text TestText;
+    public Transform mainPage;
 
-
-    ChatClient chatClient;
+    [HideInInspector] public ChatClient chatClient { get; private set; }
     [HideInInspector] public string userId;
     [HideInInspector] public string roomPin;
     [HideInInspector] public ChatWindow currentChatWindow;
@@ -96,6 +95,9 @@ public class ChatManager : MonoBehaviour, IChatClientListener
         
     }
 
+    /// <summary>
+    /// Instantiates a ChatWindow into the scene
+    /// </summary>
     void CreateChatWindow()
     {
         Transform canvas = FindObjectOfType<Canvas>().transform;
@@ -121,8 +123,6 @@ public class ChatManager : MonoBehaviour, IChatClientListener
         chatClient.Subscribe(roomPin);
         roomConnectWindow.SetActive(false);
         hostRoomWindow.gameObject.SetActive(false);
-
-        
     }
 
     public void OnDisconnected()
@@ -131,17 +131,7 @@ public class ChatManager : MonoBehaviour, IChatClientListener
 
     public void OnGetMessages(string channelName, string[] senders, object[] messages)
     {
-        print("Recieved " + messages[0] + " by " + senders[0]);
-
         currentChatWindow.CreateChatBubble();
-        //GameObject bubble = Instantiate(chatBubble, currentChatWindow.viewPortContent);
-        //bubble.GetComponent<ChatBubble>().bubble.text = messages[0].ToString();
-        //bubble.GetComponent<ChatBubble>().userName.text = "Sent by: " + senders[0];
-
-        //foreach (object message in messages)
-        //{
-        //    print(message.ToString());
-        //}
     }
 
     public void OnPrivateMessage(string sender, object message, string channelName)
@@ -150,12 +140,10 @@ public class ChatManager : MonoBehaviour, IChatClientListener
 
     public void OnStatusUpdate(string user, int status, bool gotMessage, object message)
     {
-        
     }
 
     public void OnSubscribed(string[] channels, bool[] results)
     {
-        //print("Subscribed to channel " + channels[0]);
     }
 
     public void OnUnsubscribed(string[] channels)

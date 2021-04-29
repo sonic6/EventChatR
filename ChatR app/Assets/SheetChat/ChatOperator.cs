@@ -10,7 +10,7 @@ namespace SheetChat
 {
     public class ChatOperator : MonoBehaviour
     {
-        public static string sheetData;
+        //public static string sheetData;
 
         string[] Scopes = { SheetsService.Scope.Spreadsheets };
         static readonly string Applicationname = "ChatR";
@@ -140,6 +140,36 @@ namespace SheetChat
             var appendRequest = service.Spreadsheets.Values.Append(valueRange, spreadSheetId, range);
             appendRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
             var appendResponse = appendRequest.Execute();
+        }
+
+        /// <summary>
+        /// Deletes a selected event and its chat
+        /// </summary>
+        public void DeleteEventChat(ChatWindow window, Transform mainPage)
+        {
+            var deleteSheetRequest = new DeleteSheetRequest();
+            Spreadsheet a = new Spreadsheet();
+            a = service.Spreadsheets.Get(spreadSheetId).Execute();
+            
+
+            int? sheetIdToDelete = null;
+            foreach (Sheet s in a.Sheets)
+            {
+                if (s.Properties.Title == window.roomName)
+                    sheetIdToDelete = s.Properties.SheetId;
+            }
+
+            deleteSheetRequest.SheetId = sheetIdToDelete;
+            BatchUpdateSpreadsheetRequest batchUpdateSpreadsheetRequest = new BatchUpdateSpreadsheetRequest();
+            batchUpdateSpreadsheetRequest.Requests = new List<Request>();
+            batchUpdateSpreadsheetRequest.Requests.Add(new Request { DeleteSheet = deleteSheetRequest });
+            var batchUpdateRequest = service.Spreadsheets.BatchUpdate(batchUpdateSpreadsheetRequest, spreadSheetId);
+            batchUpdateRequest.Execute();
+            
+            window.manager.currentChatWindow = null;
+            window.manager.chatClient.Disconnect();
+            mainPage.gameObject.SetActive(true);
+            Destroy(window.gameObject);
         }
     }
 }

@@ -6,21 +6,24 @@ using UnityEngine.UI;
 
 public class ChatWindow : MonoBehaviour
 {
-    ChatManager manager; //The ChatManger in the scene
+    [HideInInspector] public ChatManager manager { get; private set; } //The ChatManger in the scene
     ChatClient client; //A ChatClient from the ChatManager
     public Transform viewPortContent; //The transform of the 'content' gameobject inside ChatWindow gameobject
 
     public Text eventNameBillboard;
-    public Text eventDescriptionBillboard;
+    [SerializeField] Text eventDescriptionBillboard;
+    [SerializeField] GameObject deleteChat_Box;
     
-    [HideInInspector] public string roomPin;
+    [HideInInspector] public string roomName;
     [HideInInspector] public int messageCount = 0;
+
+    bool clearWindow = true;
 
     void Start()
     {
         manager = FindObjectOfType<ChatManager>();
-        roomPin = manager.roomPin;
-        manager.ConnectToPhoton(manager.userId, roomPin);
+        roomName = manager.roomPin;
+        manager.ConnectToPhoton(manager.userId, roomName);
 
         print(messageCount);
     }
@@ -28,10 +31,24 @@ public class ChatWindow : MonoBehaviour
     private void Update()
     {
         // Check if Back was pressed this frame
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (Input.GetKeyUp(KeyCode.Escape) && !clearWindow)
         {
             eventDescriptionBillboard.transform.parent.gameObject.SetActive(false);
+            deleteChat_Box.SetActive(false);
+            clearWindow = true;
         }
+        else if(Input.GetKeyUp(KeyCode.Escape) && clearWindow)
+        {
+            manager.currentChatWindow = null;
+            manager.chatClient.Disconnect();
+            manager.mainPage.gameObject.SetActive(true);
+            Destroy(gameObject);
+        }
+    }
+    //Used by UI buttons
+    public void SetClearWindow()
+    {
+        clearWindow = false;
     }
 
     //Sends a user written message to the ChatManger which in turn sends it online
@@ -39,15 +56,15 @@ public class ChatWindow : MonoBehaviour
     {
         if (input.text != string.Empty)
         {
-            manager.operand.WriteMessage(manager.userId, input.text, roomPin, client);
+            manager.operand.WriteMessage(manager.userId, input.text, roomName, client);
             input.text = string.Empty;
         }
     }
 
     public void CreateChatBubble()
     {
-        string range = $"{roomPin}!A:B";
-        IList<object> messageLine = manager.operand.ReadAtLine(roomPin, messageCount, $"{roomPin}!A:B");
+        string range = $"{roomName}!A:B";
+        IList<object> messageLine = manager.operand.ReadAtLine(roomName, messageCount, $"{roomName}!A:B");
 
         GameObject bubble = Instantiate(manager.chatBubble, manager.currentChatWindow.viewPortContent);
         bubble.GetComponent<ChatBubble>().bubble.text = messageLine[1].ToString();
@@ -57,9 +74,17 @@ public class ChatWindow : MonoBehaviour
 
     public void ReadDescription()
     {
-        string range = $"{roomPin}!G:G";
-        IList<object> descriptionLine = manager.operand.ReadAtLine(roomPin, 0, range);
-        eventDescriptionBillboard.text = descriptionLine[0].ToString();
+        try
+        {
+            string range = $"{roomName}!G:G";
+            IList<object> descriptionLine = manager.operand.ReadAtLine(roomName, 0, range);
+            eventDescriptionBillboard.text = descriptionLine[0].ToString();
+        }
+        catch
+        {
+            eventDescriptionBillboard.text = "The host of this event did not write a description";
+        }
+        
     }
 
     private void OnEnable()
@@ -71,5 +96,14 @@ public class ChatWindow : MonoBehaviour
     public void SetChatClient(ChatClient newClient)
     {
         client = newClient;
+    }
+
+    //This method has to exist here because Unity's inspector can't get access to the ChatOperator from an instance of a chatwindow prefab
+    /// <summary>
+    /// Calls a method in ChatOperator that deletes this ChatWindow and its chat history 
+    /// </summary>
+    public void DeleteThisWindow()
+    {
+        manager.operand.DeleteEventChat(this, manager.mainPage);
     }
 }
